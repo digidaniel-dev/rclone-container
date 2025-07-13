@@ -1,21 +1,20 @@
-FROM alpine:latest AS build
+FROM golang:1.24.5-alpine3.22 AS builder
 
-RUN apk update && apk add \
-  curl
+RUN apk add --no-cache git
 
-RUN curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip && \
-  unzip rclone-current-linux-amd64.zip && \
-  cd rclone-*-linux-amd64 && \
-  cp rclone /usr/bin && \
-  chown root:root /usr/bin/rclone && \
-  chmod 755 /usr/bin/rclone
+WORKDIR /build
+RUN git clone --branch v1.70.3 --depth 1 https://github.com/rclone/rclone.git && \
+  cd rclone && \
+  go build -trimpath -ldflags="-s -w" -o /rclone 
 
-COPY sync_rclone_cron /etc/cron.d/sync_rclone_cron
-RUN crontab /etc/cron.d/sync_rclone_cron
+FROM gcr.io/distroless/static-debian12
 
-RUN chmod 0644 /etc/cron.d/sync_rclone_cron
+COPY --from=builder /rclone /rclone
+COPY --chown=65532:65532 rclone.conf /config/rclone/rclone.conf
 
-COPY sync_rclone.sh /usr/local/bin/sync_rclone.sh
-RUN chmod +x /usr/local/bin/sync_rclone.sh
+ENV RCLONE_CONFIG=/config/rclone/rclone.conf
 
-CMD ["crond", "&&", "tail", "-f", "/var/log/cron.log"]
+USER nonroot
+ENTRYPOINT ["/rclone"]
+CMD ["--version"]
+

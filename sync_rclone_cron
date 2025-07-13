@@ -1,2 +1,0 @@
-0/2 * * * * root /usr/local/bin/sync_rclone.sh >> /var/log/cron.log 2>&1
-
