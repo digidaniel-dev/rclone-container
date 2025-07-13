@@ -1,4 +1,4 @@
-IMAGE_NAME=rclone-minimal
+IMAGE_NAME=digidanieldev/rclone-minimal
 TAG=1.70.3
 PLATFORMS=linux/amd64
 
