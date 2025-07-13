@@ -10,7 +10,6 @@ RUN git clone --branch v1.70.3 --depth 1 https://github.com/rclone/rclone.git &&
 FROM gcr.io/distroless/static-debian12
 
 COPY --from=builder /rclone /rclone
-COPY --chown=65532:65532 rclone.conf /config/rclone/rclone.conf
 
 ENV RCLONE_CONFIG=/config/rclone/rclone.conf
 
